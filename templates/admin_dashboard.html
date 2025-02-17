@@ -1,0 +1,216 @@
+<style>
+    /* General Styles */
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background-color: #f4f4f9;
+        color: #333;
+        margin: 0;
+        padding: 20px;
+    }
+
+    h2, h3 {
+        color: #2c3e50;
+    }
+
+    h2 {
+        border-bottom: 2px solid #3498db;
+        padding-bottom: 10px;
+    }
+
+    h3 {
+        margin-top: 20px;
+        color: #34495e;
+    }
+
+    /* Table Styles */
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 20px;
+        background-color: #fff;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    th, td {
+        padding: 12px 15px;
+        text-align: left;
+    }
+
+    th {
+        background-color: #ff5e62;
+        color: #0e0101;
+        font-weight: bold;
+    }
+
+    tr:nth-child(even) {
+        background-color: #f9f9f9;
+    }
+
+    tr:hover {
+        background-color: #f1f1f1;
+    }
+
+    /* Form Styles */
+    form {
+        display: inline-block;
+    }
+
+    input[type="number"], input[type="text"] {
+        padding: 8px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        margin-right: 10px;
+    }
+
+    button {
+        padding: 8px 15px;
+        background-color: #ff5e62;
+        color: #0e0101;
+        font-weight: bold;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+        background-color: #2980b9;
+    }
+
+    /* Specific Styles for Pending Requests */
+    .pending-request {
+        color: #e67e22;
+    }
+
+    .approved-request {
+        color: #27ae60;
+    }
+
+    /* Remove Student Form */
+    #remove-student-form {
+        margin-top: 20px;
+    }
+
+    #remove-student-form input {
+        width: 200px;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        table, thead, tbody, th, td, tr {
+            display: block;
+        }
+
+        th {
+            position: absolute;
+            top: -9999px;
+            left: -9999px;
+        }
+
+        tr {
+            border: 1px solid #ccc;
+            margin-bottom: 10px;
+        }
+
+        td {
+            border: none;
+            position: relative;
+            padding-left: 50%;
+        }
+
+        td:before {
+            position: absolute;
+            top: 6px;
+            left: 6px;
+            width: 45%;
+            padding-right: 10px;
+            white-space: nowrap;
+            content: attr(data-label);
+            font-weight: bold;
+        }
+
+        input[type="number"], input[type="text"] {
+            width: 100%;
+            margin-bottom: 10px;
+        }
+
+        button {
+            width: 100%;
+        }
+    }
+</style>
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Admin Dashboard</h2>
+
+<!-- Pending Library Requests -->
+<h3>Pending Library Requests</h3>
+<table>
+    <thead>
+        <tr>
+            <th>Student ID</th>
+            <th>Seat Number</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for req in pending_requests %}
+        <tr>
+            <td>{{ req.student_id }}</td>
+            <td>
+                {% if req.status == 'pending' %}
+                <form action="{{ url_for('approve_library', request_id=req.id) }}" method="post">
+                    <input type="number" name="seat_number" placeholder="Enter Seat Number" required>
+                    <button type="submit">Approve</button>
+                </form>
+                {% else %}
+                Approved - Seat No: {{ req.seat_number }}
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<!-- Fee Update Requests -->
+<h3>Pending Fee Update Requests</h3>
+{% if fee_update_requests %}
+    <table>
+        <thead>
+            <tr>
+                <th>Student ID</th>
+                <th>Approve Payment</th>
+                <th>Log Fee Approval</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for fee in fee_update_requests %}
+            <tr>
+                <td>{{ fee.student_id }}</td>
+                <td>
+                    <form action="{{ url_for('approve_fee_status', fee_id=fee.id) }}" method="post">
+                        <button type="submit">Approve Fee</button>
+                    </form>
+                </td>
+                <td>
+                    <form action="{{ url_for('approve_fee_history', student_id=fee.student_id) }}" method="post">
+                        <button type="submit">Log Approval</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% else %}
+    <p>No pending fee requests.</p>
+{% endif %}
+
+<!-- Remove Student -->
+<h3>Remove Student</h3>
+<form action="{{ url_for('remove_student') }}" method="post">
+    <input type="number" name="student_id" placeholder="Enter Student ID" required>
+    <button type="submit">Remove</button>
+</form>
+
+{% endblock %}
